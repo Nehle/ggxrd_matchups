@@ -7,7 +7,7 @@
 			"request": "launch",
 			"program": "index.js",
 			"stopOnEntry": false,
-			"args": ["pg"],
+			"args": ["--rev","--metagame"],
 			"cwd": ".",
 			"runtimeExecutable": null,
 			"runtimeArgs": [

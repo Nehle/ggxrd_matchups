@@ -4,9 +4,12 @@ var rp = require("request-promise"),
     debug   = require("debug")("ggxrd-stats"),
     fs      = require("fs");
 
-const game = process.argv[2] === "pg2" ? "pg2" : "pg";
+const game = process.argv.indexOf("--rev") !== -1 ? "pg2" : "pg";
+const metagame = process.argv.indexOf("--metagame") !== -1; 
 const baseUrl = "http://www.ggxrd.com/" + game + "/diagram_view.php";
 
+debug("game: %s", game);
+debug("metagame: %s", metagame);
 debug("baseUrl: %o", baseUrl);
 
 const japNames = {
@@ -30,31 +33,35 @@ const japNames = {
     "Jam": "蔵土縁紗夢",
     "Johnny": "ジョニー",
     "Jack-O": "ジャック・オー"
-}
+};
 
 function getCharacter(text) {
     for(var key in japNames) {
         if (text.indexOf(japNames[key]) !== -1)
-            return key
+            return key;
     }
     debug("UNKNOWN %s", text);
-    return "UNKNOWN"
+    return "UNKNOWN";
 }
 
 function makeCsv(matchups) {
     const chars = Object.keys(matchups);
+    const header = metagame ? "" : ", " + chars.join(", ") + "\n" ;
     const lines = chars.map(c => {
         return c + ", " + chars.map(c2 => {
+            if(metagame) {
+                return ( matchups[c][c2] / 10 );
+            }
             return matchups[c][c2];
         }).join(", ");
     }).join("\n");
-    return ", " + chars.join(", ") + "\n" + lines;
+    return header + lines;
 }
 
 var env = Promise.promisify(jsdom.env);
 env(baseUrl, ["http://code.jquery.com/jquery.js"])
     .then(function (window) {
-        debug("jsdom succeeded");
+        debug("parsed first page");
         const $ = window.jQuery;
         return $.makeArray($("option"))
             .map(i => $(i).attr("value"))
@@ -96,7 +103,7 @@ env(baseUrl, ["http://code.jquery.com/jquery.js"])
               matchups[me][opponent] = rank; 
            });
        });
-       return matchups
+       return matchups;
     })
     .then(makeCsv)
     .then(function (csv) {

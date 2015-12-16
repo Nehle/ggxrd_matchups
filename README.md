@@ -6,6 +6,7 @@ Requires node 4+
 `npm install` to install all dependencies
 
 Usage:
-`node index.js [pg2]`
+`node index.js [--rev] [--metagame]`
 
-Set the flag `pg2` to get matchup data from -REVELATOR- instead of -SIGN-
+Use `--rev` to fetch -REVELATOR- data instead of -SIGN-
+Use `--metagame` to format the data in a way that is compatible with Blinkity's [metagame balance tool](https://github.com/Blinkity/metagame) (i.e. no headers, let statistics be fractions of 0-1 instead of 0-10)
