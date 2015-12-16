@@ -39,7 +39,7 @@ function getCharacter(text) {
             return key
     }
     debug("UNKNOWN %s", text);
-    return "unk"
+    return "UNKNOWN"
 }
 
 function makeCsv(matchups) {
@@ -52,7 +52,6 @@ function makeCsv(matchups) {
     return ", " + chars.join(", ") + "\n" + lines;
 }
 
-var allcharacters;
 var env = Promise.promisify(jsdom.env);
 env(baseUrl, ["http://code.jquery.com/jquery.js"])
     .then(function (window) {
@@ -61,7 +60,6 @@ env(baseUrl, ["http://code.jquery.com/jquery.js"])
         var keys = $.makeArray($("option"))
             .map(i => $(i).attr("value"))
             .filter(s => s != "all");
-        allcharacters = keys;
         return keys;
     })
     .then(function (chars) {
