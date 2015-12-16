@@ -4,13 +4,12 @@ var rp = require("request-promise"),
     debug   = require("debug")("ggxrd-stats"),
     fs      = require("fs");
 
-var game = process.argv[2] === "pg2" ? "pg2" : "pg";
-
-var baseUrl = "http://www.ggxrd.com/" + game + "/diagram_view.php";
+const game = process.argv[2] === "pg2" ? "pg2" : "pg";
+const baseUrl = "http://www.ggxrd.com/" + game + "/diagram_view.php";
 
 debug("baseUrl: %o", baseUrl);
 
-var japNames = {
+const japNames = {
     "Sol": "ソル",
     "Ky": "カイ",
     "May": "メイ",
@@ -43,8 +42,8 @@ function getCharacter(text) {
 }
 
 function makeCsv(matchups) {
-    var chars = Object.keys(matchups);
-    var lines = chars.map(c => {
+    const chars = Object.keys(matchups);
+    const lines = chars.map(c => {
         return c + ", " + chars.map(c2 => {
             return matchups[c][c2];
         }).join(", ");
@@ -56,11 +55,10 @@ var env = Promise.promisify(jsdom.env);
 env(baseUrl, ["http://code.jquery.com/jquery.js"])
     .then(function (window) {
         debug("jsdom succeeded");
-        var $ = window.jQuery;
-        var keys = $.makeArray($("option"))
+        const $ = window.jQuery;
+        return $.makeArray($("option"))
             .map(i => $(i).attr("value"))
             .filter(s => s != "all");
-        return keys;
     })
     .then(function (chars) {
         debug("Got characters", chars)
@@ -83,18 +81,18 @@ env(baseUrl, ["http://code.jquery.com/jquery.js"])
     })
     .then(function (windows) {
        debug("All pages parsed");
-       var matchups = {};
+       const matchups = {};
        windows.forEach(window => {
-           var $ = window.jQuery;           
-           var charTitle = $(".rankBox > p").text();
-           var me = getCharacter(charTitle);
+           const $ = window.jQuery;
+           const charTitle = $(".rankBox > p").text();
+           const me = getCharacter(charTitle);
            matchups[me] = {};
            matchups[me][me] = 5; //seems reasonable
            debug("gettings stats for %s", me);
            $.makeArray($("div.rankBox ul li")).forEach(el => {
-              var $el = $(el);
-              var opponent = getCharacter($el.text());
-              var rank = $el.find(".rankBoxNum").text();
+              const $el = $(el);
+              const opponent = getCharacter($el.text());
+              const rank = $el.find(".rankBoxNum").text();
               matchups[me][opponent] = rank; 
            });
        });
