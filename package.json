@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Jakob Nilsson-Ehle <jehle@walmartlabs.com>",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.0.6",
@@ -14,5 +14,9 @@
     "jsdom": "^7.2.1",
     "request": "^2.67.0",
     "request-promise": "^1.0.2"
+  },
+  "repository": {
+    "url": "git@github.com:Nehle/ggxrd_matchups.git",
+    "type": "git"
   }
 }

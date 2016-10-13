@@ -7,6 +7,7 @@ var rp = require("request-promise"),
 const game = process.argv.indexOf("--rev") !== -1 ? "pg2" : "pg";
 const metagame = process.argv.indexOf("--metagame") !== -1; 
 const baseUrl = "http://www.ggxrd.com/" + game + "/diagram_view.php";
+const filename = "matchups_" + game + ".csv";
 
 debug("game: %s", game);
 debug("metagame: %s", metagame);
@@ -32,7 +33,10 @@ const japNames = {
     "Leo": "レオ",
     "Jam": "蔵土縁紗夢",
     "Johnny": "ジョニー",
-    "Jack-O": "ジャック・オー"
+    "Jack-O": "ジャック・オー",
+    "Haehyun": "琴 慧弦",
+    "Raven": "レイヴン",
+    "Dizzy": "ディズィー"
 };
 
 function getCharacter(text) {
@@ -58,17 +62,36 @@ function makeCsv(matchups) {
     return header + lines;
 }
 
+function buildMatchupTable(windows) {
+    const matchups = {};
+    windows.forEach(window => {
+        const $ = window.jQuery;
+        const charTitle = $(".rankBox > p").text();
+        const me = getCharacter(charTitle);
+        matchups[me] = {};
+        matchups[me][me] = 5; //seems reasonable
+        debug("gettings stats for %s", me);
+        $.makeArray($("div.rankBox ul li")).forEach(el => {
+            const $el = $(el);
+            const opponent = getCharacter($el.text());
+            const rank = $el.find(".rankBoxNum").text();
+            matchups[me][opponent] = rank; 
+        });
+    });
+    return matchups;
+}
+
 var env = Promise.promisify(jsdom.env);
 env(baseUrl, ["http://code.jquery.com/jquery.js"])
     .then(function (window) {
-        debug("parsed first page");
+        debug("Parsed index page");
         const $ = window.jQuery;
         return $.makeArray($("option"))
             .map(i => $(i).attr("value"))
             .filter(s => s != "all");
     })
     .then(function (chars) {
-        debug("Got characters", chars)
+        debug("Got characters %o", chars)
         return Promise.all(chars.map(c => {  
             return rp({
                 method: "POST",
@@ -77,7 +100,7 @@ env(baseUrl, ["http://code.jquery.com/jquery.js"])
                     mode: "character",
                     character: c
                 }
-            })
+            });
         }));
     })
     .then(function (results) {
@@ -88,26 +111,12 @@ env(baseUrl, ["http://code.jquery.com/jquery.js"])
     })
     .then(function (windows) {
        debug("All pages parsed");
-       const matchups = {};
-       windows.forEach(window => {
-           const $ = window.jQuery;
-           const charTitle = $(".rankBox > p").text();
-           const me = getCharacter(charTitle);
-           matchups[me] = {};
-           matchups[me][me] = 5; //seems reasonable
-           debug("gettings stats for %s", me);
-           $.makeArray($("div.rankBox ul li")).forEach(el => {
-              const $el = $(el);
-              const opponent = getCharacter($el.text());
-              const rank = $el.find(".rankBoxNum").text();
-              matchups[me][opponent] = rank; 
-           });
-       });
-       return matchups;
+       return buildMatchupTable(windows);
     })
     .then(makeCsv)
-    .then(function (csv) {
-        fs.writeFileSync("matchups_" + game + ".csv", csv);
+    .then(fs.writeFileSync.bind(fs, filename))
+    .then(function() {
+        console.log(filename, "written")
     })
     .catch(function (err) {
         console.log(err); 
