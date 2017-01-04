@@ -6,7 +6,7 @@ var rp = require("request-promise"),
 
 const game = process.argv.indexOf("--rev") !== -1 ? "pg2" : "pg";
 const metagame = process.argv.indexOf("--metagame") !== -1; 
-const baseUrl = "http://www.ggxrd.com/" + game + "/diagram_view.php";
+const baseUrl = "http://www.ggxrd.com/" + game + "/diagram_view.php?grade=dan";
 const filename = "matchups_" + game + ".csv";
 
 debug("game: %s", game);
